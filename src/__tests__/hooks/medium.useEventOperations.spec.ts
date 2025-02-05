@@ -118,7 +118,7 @@ describe('이벤트 CRUD 테스트 >', () => {
   });
 
   it('존재하는 이벤트 삭제 시 에러없이 아이템이 삭제된다.', async () => {
-    setupMockHandlerDeletion();
+    setupMockHandlerDeletion(mockEvents);
 
     const { result } = renderHook(() => useEventOperations(false));
 
@@ -126,10 +126,11 @@ describe('이벤트 CRUD 테스트 >', () => {
       await result.current.fetchEvents();
     });
 
-    expect(result.current.events).toHaveLength(1);
+    expect(result.current.events).toHaveLength(2);
 
     await act(async () => {
       await result.current.deleteEvent('1');
+      await result.current.deleteEvent('2');
     });
 
     expect(result.current.events).toEqual([]);
