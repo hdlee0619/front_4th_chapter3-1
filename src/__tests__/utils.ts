@@ -17,3 +17,8 @@ export const setupDate = (date: string) => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(date));
 };
+
+export const cleanupDate = () => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
+};
