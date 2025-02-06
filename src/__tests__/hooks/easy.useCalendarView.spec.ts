@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe } from 'vitest';
 
-import { useCalendarView } from '../../hooks/useCalendarView.ts';
+import { useCalendarView } from '../../entities/calendar/lib';
 import { assertDate, setupDate } from '../utils.ts';
 
 beforeEach(() => {
