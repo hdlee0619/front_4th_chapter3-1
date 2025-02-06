@@ -1,11 +1,14 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
+import { useEditEventStore } from '../entities/event/model';
 import { Event, RepeatType } from '../types';
 import { getTimeErrorMessage } from '../utils/timeValidation';
 
 type TimeErrorRecord = Record<'startTimeError' | 'endTimeError', string | null>;
 
 export const useEventForm = (initialEvent?: Event) => {
+  const { editingEventId, editingEvent, setEditingEvent, resetEditingEvent } = useEditEventStore();
+
   const [title, setTitle] = useState(initialEvent?.title || '');
   const [date, setDate] = useState(initialEvent?.date || '');
   const [startTime, setStartTime] = useState(initialEvent?.startTime || '');
@@ -18,9 +21,6 @@ export const useEventForm = (initialEvent?: Event) => {
   const [repeatInterval, setRepeatInterval] = useState(initialEvent?.repeat.interval || 1);
   const [repeatEndDate, setRepeatEndDate] = useState(initialEvent?.repeat.endDate || '');
   const [notificationTime, setNotificationTime] = useState(initialEvent?.notificationTime || 10);
-
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-
   const [{ startTimeError, endTimeError }, setTimeError] = useState<TimeErrorRecord>({
     startTimeError: null,
     endTimeError: null,
@@ -38,36 +38,22 @@ export const useEventForm = (initialEvent?: Event) => {
     setTimeError(getTimeErrorMessage(startTime, newEndTime));
   };
 
-  const resetForm = () => {
-    setTitle('');
-    setDate('');
-    setStartTime('');
-    setEndTime('');
-    setDescription('');
-    setLocation('');
-    setCategory('');
-    setIsRepeating(false);
-    setRepeatType('none');
-    setRepeatInterval(1);
-    setRepeatEndDate('');
-    setNotificationTime(10);
-  };
-
-  const editEvent = (event: Event) => {
-    setEditingEvent(event);
-    setTitle(event.title);
-    setDate(event.date);
-    setStartTime(event.startTime);
-    setEndTime(event.endTime);
-    setDescription(event.description);
-    setLocation(event.location);
-    setCategory(event.category);
-    setIsRepeating(event.repeat.type !== 'none');
-    setRepeatType(event.repeat.type);
-    setRepeatInterval(event.repeat.interval);
-    setRepeatEndDate(event.repeat.endDate || '');
-    setNotificationTime(event.notificationTime);
-  };
+  useEffect(() => {
+    if (editingEvent) {
+      setTitle(editingEvent.title);
+      setDate(editingEvent.date);
+      setStartTime(editingEvent.startTime);
+      setEndTime(editingEvent.endTime);
+      setDescription(editingEvent.description);
+      setLocation(editingEvent.location);
+      setCategory(editingEvent.category);
+      setIsRepeating(editingEvent.repeat.type !== 'none');
+      setRepeatType(editingEvent.repeat.type);
+      setRepeatInterval(editingEvent.repeat.interval);
+      setRepeatEndDate(editingEvent.repeat.endDate || '');
+      setNotificationTime(editingEvent.notificationTime);
+    }
+  }, [editingEvent]);
 
   return {
     title,
@@ -96,11 +82,11 @@ export const useEventForm = (initialEvent?: Event) => {
     setNotificationTime,
     startTimeError,
     endTimeError,
+    editingEventId,
     editingEvent,
     setEditingEvent,
     handleStartTimeChange,
     handleEndTimeChange,
-    resetForm,
-    editEvent,
+    resetForm: resetEditingEvent,
   };
 };
