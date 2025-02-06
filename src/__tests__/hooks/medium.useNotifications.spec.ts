@@ -1,5 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
+import { useEventStore } from '../../entities/event/model';
+import { useCalendarStore } from '../../features/calendar';
 import { useNotifications } from '../../hooks/useNotifications';
 import { Event } from '../../types';
 import { setupDate } from '../utils';
@@ -22,18 +24,27 @@ const mockEvents = [
 describe('useNotifications', () => {
   beforeEach(() => {
     setupDate('2024-02-05T10:00:00');
+    act(() => {
+      useEventStore.getState().setEvents(mockEvents);
+      useCalendarStore.getState().reset();
+    });
+  });
+
+  afterEach(() => {
+    act(() => {
+      useEventStore.getState().resetEvents();
+    });
   });
 
   it('초기 상태에서는 알림이 없어야 한다', () => {
-    const events: Event[] = [];
-    const { result } = renderHook(() => useNotifications(events));
+    const { result } = renderHook(() => useNotifications());
 
     expect(result.current.notifications).toHaveLength(0);
     expect(result.current.notifiedEvents).toHaveLength(0);
   });
 
   it('지정된 시간이 된 경우 알림이 새롭게 생성되어 추가된다', () => {
-    const { result } = renderHook(() => useNotifications(mockEvents));
+    const { result } = renderHook(() => useNotifications());
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -45,7 +56,7 @@ describe('useNotifications', () => {
   });
 
   it('index를 기준으로 알림을 적절하게 제거할 수 있다', () => {
-    const { result } = renderHook(() => useNotifications(mockEvents));
+    const { result } = renderHook(() => useNotifications());
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -61,7 +72,7 @@ describe('useNotifications', () => {
   });
 
   it('이미 알림이 발생한 이벤트에 대해서는 중복 알림이 발생하지 않아야 한다', () => {
-    const { result } = renderHook(() => useNotifications(mockEvents));
+    const { result } = renderHook(() => useNotifications());
 
     act(() => {
       vi.advanceTimersByTime(1000);
