@@ -2,10 +2,12 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe } from 'vitest';
 
 import { useCalendarView } from '../../entities/calendar/lib';
+import { useCalendarStore } from '../../features/calendar';
 import { assertDate, setupDate } from '../utils.ts';
 
 beforeEach(() => {
   setupDate('2024-10-01');
+  useCalendarStore.getState().reset();
 });
 
 describe('초기 상태 테스트 >', () => {

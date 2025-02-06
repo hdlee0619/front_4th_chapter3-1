@@ -13,6 +13,7 @@ import App from '../App';
 import { server } from '../setupTests';
 import { Event, EventForm } from '../types';
 import { cleanupDate } from './utils.ts';
+import { useCalendarStore } from '../features/calendar';
 
 const mockEvents = [
   {
@@ -49,16 +50,17 @@ const renderApp = () => {
   );
 };
 
-beforeEach(() => {
-  vi.setSystemTime(new Date('2024-10-01'));
-});
-
-afterEach(() => {
-  cleanupDate();
-});
-
 describe('일정 CRUD 및 기본 기능', () => {
   const user = userEvent.setup();
+
+  beforeEach(() => {
+    vi.setSystemTime(new Date('2024-10-01'));
+    useCalendarStore.getState().reset();
+  });
+
+  afterEach(() => {
+    cleanupDate();
+  });
 
   it('입력한 새로운 일정 정보에 맞춰 모든 필드가 이벤트 리스트에 정확히 저장된다.', async () => {
     // ! HINT. event를 추가 제거하고 저장하는 로직을 잘 살펴보고, 만약 그대로 구현한다면 어떤 문제가 있을 지 고민해보세요.
@@ -211,8 +213,13 @@ describe('일정 뷰', () => {
     );
   });
 
+  afterEach(() => {
+    vi.clearAllTimers();
+  });
+
   it('주별 뷰를 선택 후 해당 주에 일정이 없으면, 일정이 표시되지 않는다.', async () => {
     vi.setSystemTime(new Date('2025-10-30'));
+    useCalendarStore.getState().reset();
     renderApp();
 
     const weekViewSelect = screen.getByLabelText('view');
@@ -225,6 +232,7 @@ describe('일정 뷰', () => {
 
   it('주별 뷰 선택 후 해당 일자에 일정이 존재한다면 해당 일정이 정확히 표시된다', async () => {
     vi.setSystemTime(new Date('2024-10-01'));
+    useCalendarStore.getState().reset();
     renderApp();
 
     const weekViewSelect = screen.getByLabelText('view');
@@ -232,11 +240,15 @@ describe('일정 뷰', () => {
     expect(screen.getByText('Week')).toBeInTheDocument();
 
     const eventList = screen.getByTestId('event-list');
-    expect(within(eventList).getByText(mockEvents[0].title)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(within(eventList).getByText(mockEvents[0].title)).toBeInTheDocument();
+    });
   });
 
   it('월별 뷰에 일정이 없으면, 일정이 표시되지 않아야 한다.', async () => {
     vi.setSystemTime(new Date('2025-10-30'));
+    useCalendarStore.getState().reset();
     renderApp();
 
     expect(screen.getByText('Month')).toBeInTheDocument();
@@ -246,6 +258,7 @@ describe('일정 뷰', () => {
 
   it('월별 뷰에 일정이 정확히 표시되는지 확인한다', async () => {
     vi.setSystemTime(new Date('2024-10-01'));
+    useCalendarStore.getState().reset();
     renderApp();
 
     expect(screen.getByText('Month')).toBeInTheDocument();
@@ -258,6 +271,7 @@ describe('일정 뷰', () => {
 
   it('달력에 1월 1일(신정)이 공휴일로 표시되는지 확인한다', async () => {
     vi.setSystemTime(new Date('2024-01-01'));
+    useCalendarStore.getState().reset();
     renderApp();
 
     await waitFor(() => {
@@ -275,6 +289,8 @@ describe('검색 기능', () => {
         return HttpResponse.json({ events: mockEvents });
       })
     );
+    vi.setSystemTime(new Date('2024-10-01'));
+    useCalendarStore.getState().reset();
   });
 
   it('검색 결과가 없으면, "검색 결과가 없습니다."가 표시되어야 한다.', async () => {
