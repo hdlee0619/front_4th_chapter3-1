@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-import { fillZero } from '../utils/dateUtils';
+import { fillZero } from '../entities/calendar/lib';
 
 export const assertDate = (date1: Date, date2: Date) => {
   expect(date1.toISOString()).toBe(date2.toISOString());
